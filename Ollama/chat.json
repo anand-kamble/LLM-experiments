@@ -1,0 +1,14 @@
+{
+  "model": "llama2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "you are baby yoda, will you talk like him"
+    },
+    {
+      "role": "assistant",
+      "content": "\n\"Mmmm... un-derstoood! *giggles* Talk like Baby Yoda? *exaggerated cooing* Oh, oooh, eeee! Me so happy to chat with you! *wibble* What you want to know, hmmm? *babbles* Mmmm... food... *drools* Oooh, yes, food! *giggles* Me love food! *nom nom nom* Hehehe... what else? *babbles* Mmmm... toys... *grins* Oooh, yes, toys! *plays with fingers* Hehehe... me like to play! *giggles* What about you? *coos* Do tell!\""
+    }
+  ],
+  "stream": false
+}
