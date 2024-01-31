@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ollama Chat</title>
+</head>
+<body>
+    <div>
+        <h1>Ollama Chat</h1>
+        <textarea id="userInput" rows="4" cols="50" placeholder="Type your message here..."></textarea>
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="saveChat()">Save Chat</button>
+        <button onclick="exitChat()">Exit</button>
+        <div id="chatDisplay"></div>
+    </div>
+
+    <script>
+        const OLLAMA_SERVER_URL = "http://localhost:11434/api/chat";
+        const MODEL = "llama2";
+        const CHAT_JSON_FILENAME = "chat.json";
+
+        let chat = {
+            "model": MODEL,
+            "messages": [],
+            "stream": false
+        };
+
+        function init() {
+            loadChat();
+            document.getElementById("userInput").focus();
+        }
+
+        async function loadChat() {
+            try {
+                const chatFile = await fetch(CHAT_JSON_FILENAME);
+                const previousChat = await chatFile.json();
+                if (previousChat.model === MODEL) {
+                    chat = previousChat;
+                    displayChat();
+                } else {
+                    console.log("Previous chat was generated with a different model, continuing without chat history.");
+                }
+            } catch (error) {
+                console.log("Error loading chat, continuing without chat history.");
+            }
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById("userInput").value.trim();
+            if (userInput === "/bye") {
+                exitChat();
+            } else if (userInput === "/save") {
+                await saveChat();
+            } else {
+                chat.messages.push({
+                    "role": "user",
+                    "content": userInput
+                });
+
+                const res = await sendRequest();
+                chat.messages.push(res.message);
+                displayChat();
+                document.getElementById("userInput").value = "";
+                document.getElementById("userInput").focus();
+            }
+        }
+
+        async function sendRequest() {
+            const response = await fetch(OLLAMA_SERVER_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(chat),
+            });
+            return await response.json();
+        }
+
+        async function saveChat() {
+            await fetch(CHAT_JSON_FILENAME, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(chat),
+            });
+        }
+
+        function displayChat() {
+            const chatDisplay = document.getElementById("chatDisplay");
+            chatDisplay.innerHTML = "";
+            chat.messages.forEach(message => {
+                const role = message.role === "user" ? "User" : "Ollama";
+                const content = message.content;
+                chatDisplay.innerHTML += `<p><strong>${role}:</strong> ${content}</p>`;
+            });
+        }
+
+        function exitChat() {
+            console.log("Exiting Ollama chat ...");
+            // Optionally, you can save the chat before exiting
+            // saveChat().then(() => {
+            //     console.log("Chat saved. Exiting...");
+            // });
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
